@@ -61,6 +61,23 @@ class Shell:
         """Команда выхода"""
         self.running = False
         return "Выход из эмулятора"
+    def execute_script(self, script_path):
+        """Выполнение стартового скрипта"""
+        try:
+            with open(script_path, 'r', encoding='utf-8') as f:
+                output = []
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#'):  # Пропуск комментариев
+                        output.append(f"> {line}")
+                        result = self.execute(line)
+                        if result:
+                            output.append(result)
+                        if not self.running:
+                            break
+                return "\n".join(output)
+        except Exception as e:
+            return f"Ошибка выполнения скрипта: {str(e)}"
 
 class ShellGUI:
     """Графический интерфейс эмулятора"""
