@@ -6,6 +6,8 @@ import getpass
 import shlex
 import xml.etree.ElementTree as ET
 import base64
+import calendar
+from datetime import datetime
 
 class Shell:
     """Обработчик команд shell"""
@@ -220,6 +222,99 @@ class VFS:
             current = current.parent
         
         return "/" + "/".join(path_parts) if path_parts else "/"
+    
+class CommandExecutor:
+    """Исполнитель команд с поддержкой VFS"""
+    def __init__(self, vfs):
+        self.vfs = vfs
+    
+    def execute_ls(self, args):
+        """Реализация команды ls"""
+        target_dir = self.vfs.current_dir
+        
+        # Обработка аргумента пути
+        if args:
+            target_node = self._resolve_path(args[0])
+            if not target_node:
+                return f"ls: {args[0]}: Нет такого файла или каталога"
+            if target_node.is_file:
+                return f"ls: {args[0]}: Не каталог"
+            target_dir = target_node
+        
+        # Формирование списка файлов и каталогов
+        items = list(target_dir.children.keys())
+        return "  ".join(sorted(items)) if items else ""
+    
+    def execute_cd(self, args):
+        """Реализация команды cd"""
+        if not args:
+            # cd без аргументов - переход в корень
+            self.vfs.current_dir = self.vfs.root
+            return ""
+        
+        target_node = self._resolve_path(args[0])
+        
+        if not target_node:
+            return f"cd: {args[0]}: Нет такого файла или каталога"
+        if target_node.is_file:
+            return f"cd: {args[0]}: Не каталог"
+        
+        self.vfs.current_dir = target_node
+        return ""
+    
+    def execute_echo(self, args):
+        """Реализация команды echo"""
+        return " ".join(args)
+    
+    def execute_cal(self, args):
+        """Реализация команды cal"""
+        now = datetime.now()
+        year = now.year
+        month = now.month
+        
+        # Обработка аргументов
+        if len(args) == 1:
+            try:
+                month = int(args[0])
+                if month < 1 or month > 12:
+                    return "cal: Неверный номер месяца"
+            except ValueError:
+                return "cal: Неверный аргумент"
+        elif len(args) == 2:
+            try:
+                month = int(args[0])
+                year = int(args[1])
+                if month < 1 or month > 12:
+                    return "cal: Неверный номер месяца"
+            except ValueError:
+                return "cal: Неверные аргументы"
+        
+        try:
+            return calendar.month(year, month)
+        except Exception as e:
+            return f"cal: Ошибка: {str(e)}"
+    
+    def _resolve_path(self, path):
+        """Разрешение пути в VFS"""
+        if path.startswith('/'):
+            current = self.vfs.root
+            path_parts = path[1:].split('/')
+        else:
+            current = self.vfs.current_dir
+            path_parts = path.split('/')
+        
+        for part in path_parts:
+            if not part or part == '.':
+                continue
+            elif part == '..':
+                if current.parent:
+                    current = current.parent
+            elif part in current.children:
+                current = current.children[part]
+            else:
+                return None
+        
+        return current
 
 def main():
     """Основная функция"""
