@@ -1,0 +1,27 @@
+<vfs name="root">
+    <directory name="tmp">
+        <file name="temp.txt" type="file" encoding="utf-8">
+            Временные данные
+        </file>
+    </directory>
+    <directory name="usr">
+        <directory name="local">
+            <directory name="bin">
+                <file name="app" type="file" encoding="base64">
+                    ZmljdGlvdXMgYmluYXJ5IGRhdGE=
+                </file>
+            </directory>
+        </directory>
+    </directory>
+    <directory name="opt">
+        <file name="settings.ini" type="file" encoding="utf-8">
+            [settings]
+            theme=dark
+            language=ru
+        </file>
+    </directory>
+    <file name="motd" type="file" encoding="utf-8">
+        === Альтернативная VFS загружена ===
+        Это тестовая файловая система VFS2
+    </file>
+</vfs>

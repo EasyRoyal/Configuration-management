@@ -1,0 +1,36 @@
+<vfs name="root">
+    <directory name="home">
+        <directory name="user">
+            <directory name="documents">
+                <file name="readme.txt" type="file" encoding="utf-8">
+                    Добро пожаловать в эмулятор!
+                    Это тестовый документ.
+                </file>
+                <file name="data.bin" type="file" encoding="base64">
+                    VGhpcyBpcyBiaW5hcnkgZGF0YQ==
+                </file>
+            </directory>
+            <file name="script.py" type="file" encoding="utf-8">
+                print("Hello World!")
+            </file>
+        </directory>
+    </directory>
+    <directory name="etc">
+        <file name="config.conf" type="file" encoding="utf-8">
+            hostname=localhost
+            port=8080
+        </file>
+    </directory>
+    <directory name="var">
+        <directory name="log">
+            <file name="system.log" type="file" encoding="utf-8">
+                2024-01-01: System started
+                2024-01-01: User logged in
+            </file>
+        </directory>
+    </directory>
+    <file name="motd" type="file" encoding="utf-8">
+        === Добро пожаловать в Shell Emulator ===
+        Для справки введите команду: help
+    </file>
+</vfs>

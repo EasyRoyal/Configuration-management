@@ -4,6 +4,8 @@ import os
 import sys
 import getpass
 import shlex
+import xml.etree.ElementTree as ET
+import base64
 
 class Shell:
     """Обработчик команд shell"""
@@ -61,6 +63,7 @@ class Shell:
         """Команда выхода"""
         self.running = False
         return "Выход из эмулятора"
+    
     def execute_script(self, script_path):
         """Выполнение стартового скрипта"""
         try:
@@ -156,6 +159,67 @@ class ShellGUI:
     def run(self):
         """Запуск приложения"""
         self.root.mainloop()
+
+class VFS:
+    """Виртуальная файловая система"""
+    def __init__(self):
+        self.root = VFSNode("")
+        self.current_dir = self.root
+    
+    def load_from_xml(self, file_path):
+        """Загрузка VFS из XML файла"""
+        try:
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"Файл VFS не найден: {file_path}")
+            
+            tree = ET.parse(file_path)
+            root_element = tree.getroot()
+            
+            self.root = self._parse_xml_element(root_element)
+            self.current_dir = self.root
+            return True
+            
+        except ET.ParseError:
+            raise ValueError("Неверный формат XML файла")
+        except Exception as e:
+            raise ValueError(f"Ошибка загрузки VFS: {str(e)}")
+    
+    def _parse_xml_element(self, element, parent=None):
+        """Рекурсивный парсинг XML элемента"""
+        name = element.get('name', '')
+        is_file = element.get('type') == 'file'
+        
+        node = VFSNode(name, is_file)
+        node.parent = parent
+        
+        if is_file:
+            content = element.text or ""
+            encoding = element.get('encoding', 'utf-8')
+            
+            if encoding == 'base64':
+                try:
+                    node.content = base64.b64decode(content).decode('utf-8')
+                except:
+                    node.content = content
+            else:
+                node.content = content
+        else:
+            for child_element in element:
+                child_node = self._parse_xml_element(child_element, node)
+                node.children[child_node.name] = child_node
+        
+        return node
+    
+    def get_current_path(self):
+        """Получение текущего пути"""
+        path_parts = []
+        current = self.current_dir
+        
+        while current and current.name:
+            path_parts.insert(0, current.name)
+            current = current.parent
+        
+        return "/" + "/".join(path_parts) if path_parts else "/"
 
 def main():
     """Основная функция"""
